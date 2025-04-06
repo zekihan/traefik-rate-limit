@@ -6,10 +6,10 @@ DIR=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P)
 
 cd "${DIR}/.."
 
-#if [ -n "$(git status --porcelain)" ]; then
-#	echo "Working directory dirty"
-#	exit 1
-#fi
+if [ -n "$(git status --porcelain)" ]; then
+	echo "Working directory dirty"
+	exit 1
+fi
 
 vers=$(tr -d '[:space:]' <VERSION)
 echo "Current version: ${vers}"
@@ -32,11 +32,11 @@ readme=$(cat README.md)
 readme="${readme//${vers}/${new_vers}}"
 echo "${readme}" >README.md
 
-#git add VERSION
-#git add README.md
-#
-#git commit -m "Bump version to ${new_vers}"
-#git tag -s -a "v${new_vers}" -m "Version ${new_vers}"
-#
-#git push origin main
-#git push origin "v${new_vers}"
+git add VERSION
+git add README.md
+
+git commit -m "Bump version to ${new_vers}"
+git tag -s -a "v${new_vers}" -m "Version ${new_vers}"
+
+git push origin main
+git push origin "v${new_vers}"
