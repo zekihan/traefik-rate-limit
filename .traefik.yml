@@ -16,6 +16,6 @@ testData:
     rate: 100
     burst: 100
     period: 60s
-  whitelistedIPs:
+  whitelistedIPNets:
     - "127.0.0.1/32"
-  whitelistedIPNets: true
+  whitelistLocalIPs: true

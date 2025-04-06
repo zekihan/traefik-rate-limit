@@ -71,7 +71,7 @@ http:
           ipResolver:
             header: X-Real-IP
             useSrcIP: false
-          whitelistedIPs:
+          whitelistedIPNets:
             - "127.0.0.1/32"
           whitelistLocalIPs: true
           logLevel: info
@@ -89,7 +89,7 @@ http:
 | `rateLimit.period` | string | `1m` | The time interval for the rate limit (e.g., `1s`, `1m`, `1h`). |
 | `ipResolver.header` | string | `""` | The header to use to resolve the client IP address. If empty, the source IP is used. |
 | `ipResolver.useSrcIP` | boolean | `true` | Whether to use the source IP address of the request. |
-| `whitelistedIPs` | array of strings | `[]` | A list of IP addresses or CIDR ranges that are not rate limited. |
+| `whitelistedIPNets` | array of strings | `[]` | A list of IP addresses or CIDR ranges that are not rate limited. |
 | `whitelistLocalIPs` | boolean | `true` | Whether to whitelist local IP ranges. |
 | `logLevel` | string | `info` | Log level (debug, info, warn, error) |
 

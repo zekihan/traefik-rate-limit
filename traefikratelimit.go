@@ -19,7 +19,7 @@ type Config struct {
 	Redis             *RedisConfig      `json:"redis,omitempty"`
 	Ratelimit         *RatelimitConfig  `json:"rateLimit,omitempty"`
 	IPResolver        *IPResolverConfig `json:"ipResolver,omitempty"`
-	WhitelistedIPNets []string          `json:"whitelistedIPs,omitempty"`
+	WhitelistedIPNets []string          `json:"whitelistedIPNets,omitempty"`
 	WhitelistLocalIPs bool              `json:"whitelistLocalIPs,omitempty"`
 }
 
@@ -120,7 +120,7 @@ func New(_ context.Context, next http.Handler, config *Config, name string) (htt
 	for _, ipRange := range config.WhitelistedIPNets {
 		_, ipNet, err := net.ParseCIDR(ipRange)
 		if err != nil {
-			return nil, fmt.Errorf("invalid trusted IP range: %s", ipRange)
+			return nil, fmt.Errorf("invalid whitelisted IP range: %s", ipRange)
 		}
 		whitelistedIPNets = append(whitelistedIPNets, ipNet)
 	}
