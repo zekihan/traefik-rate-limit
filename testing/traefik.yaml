@@ -1,0 +1,51 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+entryPoints:
+  web:
+    address: :80
+
+ping:
+  entryPoint: traefik
+
+providers:
+  docker:
+    endpoint: unix:///var/run/docker.sock
+    exposedByDefault: false
+    network: traefik-rate-limit_proxy
+    watch: true
+    constraints: Label(`traefik-rate-limit.enable`,`true`)
+  file:
+    directory: /etc/traefik/mconfig/
+    watch: true
+
+traefikLog:
+  filePath: /var/logs/traefik/traefik.log
+  format: json
+
+log:
+  level: DEBUG
+  format: common
+
+accessLog:
+  bufferingSize: 0
+  format: common
+  filters:
+    statusCodes:
+      - "100-800"
+    retryAttempts: true
+    minDuration: 0ms
+
+  fields:
+    defaultMode: keep
+
+experimental:
+  abortOnPluginFailure: true
+  plugins:
+    traefik-real-ip:
+      moduleName: github.com/zekihan/traefik-real-ip
+      version: v0.1.9 # renovate: depName=zekihan/traefik-real-ip
+  localPlugins:
+    traefik-rate-limit:
+      moduleName: github.com/zekihan/traefik-rate-limit

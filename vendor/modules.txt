@@ -1,0 +1,6 @@
+# github.com/go-redis/redis_rate/v10 v10.0.1
+## explicit; go 1.19
+github.com/go-redis/redis_rate/v10
+# github.com/redis/go-redis/v9 v9.7.3 => ./redis
+## explicit; go 1.23.2
+github.com/redis/go-redis/v9

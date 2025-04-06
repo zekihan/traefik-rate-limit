@@ -1,0 +1,21 @@
+displayName: Traefik Rate Limit
+type: middleware
+import: github.com/zekihan/traefik-rate-limit
+summary: Rate limits incoming requests using the GCRA algorithm and Redis.
+#iconPath: public/icon.png
+#bannerPath: public/banner.png
+testData:
+  ipResolver:
+    header: X-Forwarded-For
+    useSrcIP: false
+  logLevel: info
+  redis:
+    host: redis
+    port: 6379
+  rateLimit:
+    rate: 100
+    burst: 100
+    rateInterval: 60s
+  whitelistedIPs:
+    - "127.0.0.1/32"
+  whitelistedIPNets: true

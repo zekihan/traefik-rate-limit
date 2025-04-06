@@ -1,0 +1,71 @@
+name: traefik-rate-limit
+
+services:
+  whoami:
+    image: docker.io/traefik/whoami:v1.11.0@sha256:200689790a0a0ea48ca45992e0450bc26ccab5307375b41c84dfc4f2475937ab
+    container_name: traefik-rate-limit_whoami
+    depends_on:
+      traefik:
+        condition: service_healthy
+    networks:
+      - proxy
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      - "traefik.http.services.traefik-rate-limit_whoami.loadbalancer.server.port=80"
+      - "traefik.http.services.traefik-rate-limit_whoami.loadbalancer.server.scheme=http"
+      - "traefik.http.services.traefik-rate-limit_whoami.loadbalancer.passhostheader=true"
+
+      - "traefik.http.routers.traefik-rate-limit_whoami.service=traefik-rate-limit_whoami"
+      - "traefik.http.routers.traefik-rate-limit_whoami.middlewares=standard@file"
+      - "traefik.http.routers.traefik-rate-limit_whoami.rule=Method(`GET`)"
+      - "traefik.http.routers.traefik-rate-limit_whoami.entrypoints=web"
+
+      - "traefik.enable=true"
+      - "traefik-rate-limit.enable=true"
+
+  traefik:
+    image: docker.io/traefik:v3.3.5@sha256:104204dadedf5d1284f8ef8f97f705649ac81aa6f7a6c9abf13e2c59245b8abc
+    container_name: traefik-rate-limit_traefik
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - proxy
+      - data
+      - default
+    ports:
+      - "4009:80"
+    volumes:
+      - ./traefik.yaml:/etc/traefik/traefik.yaml
+      - ./config:/etc/traefik/mconfig
+      - ../:/plugins-local/src/github.com/zekihan/traefik-rate-limit:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "traefik healthcheck | grep OK" ]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: docker.io/redis:7.4.2@sha256:bd41d55aae1ecff61b2fafd0d66761223fe94a60373eb6bb781cfbb570a84079
+    container_name: traefik-rate-limit_redis
+    networks:
+      - data
+      - default
+    ports:
+      - "6309:6379"
+    command: [ "redis-server" ]
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+
+networks:
+  proxy:
+    internal: true
+  data:
+    internal: true
+  default:
