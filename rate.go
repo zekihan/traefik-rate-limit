@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-redis/redis_rate/v10"
+	"github.com/redis/go-redis/v9"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
@@ -11,9 +13,10 @@ import (
 )
 
 type RatelimitConfig struct {
-	Rate   int           `json:"rate,omitempty"`
-	Burst  int           `json:"burst,omitempty"`
-	Period time.Duration `json:"period,omitempty"`
+	Rate   int    `json:"rate,omitempty"`
+	Burst  int    `json:"burst,omitempty"`
+	Period string `json:"period,omitempty"`
+	period time.Duration
 }
 
 func (c *RatelimitConfig) Validate() error {
@@ -23,9 +26,14 @@ func (c *RatelimitConfig) Validate() error {
 	if c.Burst <= 0 {
 		return fmt.Errorf("burst must be greater than 0")
 	}
-	if c.Period <= 0 {
+	period, err := time.ParseDuration(c.Period)
+	if err != nil {
+		return fmt.Errorf("invalid period: %v", err)
+	}
+	if period <= time.Duration(0) {
 		return fmt.Errorf("period must be greater than 0")
 	}
+	c.period = period
 	return nil
 }
 
@@ -35,7 +43,6 @@ type RateLimiter struct {
 	name              string
 	conf              *Config
 	logger            *PluginLogger
-	limiter           *redis_rate.Limiter
 	ipResolver        *IPResolver
 	whitelistedIPNets []*net.IPNet
 }
@@ -59,10 +66,7 @@ func (a *RateLimiter) GetKey(ip string) string {
 	return key
 }
 
-func (a *RateLimiter) Allow(ctx context.Context, ip string) (*redis_rate.Result, error) {
-	if a.limiter == nil {
-		return nil, fmt.Errorf("missing redis rate limiter")
-	}
+func (a *RateLimiter) Allow(ctx context.Context, ip string) (res *redis_rate.Result, err error) {
 	if a.conf == nil {
 		return nil, fmt.Errorf("missing configuration")
 	}
@@ -75,10 +79,24 @@ func (a *RateLimiter) Allow(ctx context.Context, ip string) (*redis_rate.Result,
 	if ip == "" {
 		return nil, fmt.Errorf("missing ip address")
 	}
+
 	limit := redis_rate.Limit{
 		Rate:   a.conf.Ratelimit.Rate,
 		Burst:  a.conf.Ratelimit.Burst,
-		Period: a.conf.Ratelimit.Period,
+		Period: a.conf.Ratelimit.period,
 	}
-	return a.limiter.Allow(ctx, a.GetKey(ip), limit)
+
+	defer func() {
+		if r := recover(); r != nil {
+			a.logger.Debug("Recovered from panic", slog.Any("error", r))
+			res = nil
+			err = fmt.Errorf("%v", r)
+		}
+	}()
+	rdb := redis.GetClient(&redis.Options{
+		Addr: a.conf.Redis.GetAddress(),
+	})
+
+	limiter := redis_rate.NewLimiter(rdb)
+	return limiter.Allow(ctx, a.GetKey(ip), limit)
 }

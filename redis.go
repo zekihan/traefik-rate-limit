@@ -1,18 +1,8 @@
 package traefik_rate_limit
 
 import (
-	"context"
 	"fmt"
-	"github.com/redis/go-redis/v9"
 )
-
-func init() {
-	ctx := context.Background()
-	rdb := redis.GetClient(&redis.Options{
-		Addr: "redis:6379",
-	})
-	_ = rdb.Ping(ctx).Err()
-}
 
 type RedisConfig struct {
 	Host   string `json:"host,omitempty"`

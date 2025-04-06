@@ -8,6 +8,15 @@ import (
 	"runtime"
 )
 
+func init() {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource:   false,
+		Level:       slog.LevelDebug,
+		ReplaceAttr: replaceAttr,
+	}))
+	slog.SetDefault(logger)
+}
+
 type PluginLogger struct {
 	logger     *slog.Logger
 	pluginName string

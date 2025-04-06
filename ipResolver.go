@@ -125,7 +125,7 @@ func (a *IPResolver) getLocalIPsHardcoded() ([]*net.IPNet, error) {
 	for _, cidr := range localIPRanges {
 		_, block, err := net.ParseCIDR(cidr)
 		if err != nil {
-			a.logger.Error("Error parsing CIDR", slog.String("cidr", cidr), slog.Any("error", err))
+			a.logger.Error("Error parsing CIDR", slog.String("cidr", cidr), ErrorAttrWithoutStack(err))
 			return ips, err
 		}
 		ips = append(ips, block)

@@ -6,7 +6,7 @@ http:
           rateLimit:
             rate: 10
             burst: 10
-            rateInterval: 1s
+            period: 1s
           ipResolver:
             header: X-Real-IP
             useSrcIP: false
@@ -23,4 +23,4 @@ http:
           rateLimit:
             rate: 100
             burst: 100
-            rateInterval: 60s
+            period: 60s

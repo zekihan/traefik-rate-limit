@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-redis/redis_rate/v10"
-	"github.com/redis/go-redis/v9"
 	"log/slog"
 	"net"
 	"net/http"
@@ -37,7 +35,7 @@ func CreateConfig() *Config {
 		Ratelimit: &RatelimitConfig{
 			Rate:   100,
 			Burst:  100,
-			Period: time.Hour,
+			Period: time.Hour.String(),
 		},
 		IPResolver: &IPResolverConfig{
 			Header:   "",
@@ -77,6 +75,13 @@ func New(_ context.Context, next http.Handler, config *Config, name string) (htt
 	if err := config.Validate(); err != nil {
 		return rateLimiter, err
 	}
+	period, err := time.ParseDuration(config.Ratelimit.Period)
+	if err != nil {
+		return nil, fmt.Errorf("invalid period: %v", err)
+	}
+	slog.Debug("Parsed period", slog.String("period", config.Ratelimit.Period), slog.Any("duration", period), slog.Any("error", err), slog.Any("type", reflect.TypeOf(period)))
+
+	config.Ratelimit.period = period
 	rateLimiter.conf = config
 
 	logLevel := &slog.LevelVar{}
@@ -98,11 +103,6 @@ func New(_ context.Context, next http.Handler, config *Config, name string) (htt
 
 	pluginLogger := NewPluginLogger(name, logLevel)
 	rateLimiter.logger = pluginLogger
-
-	limiter := redis_rate.NewLimiter(redis.GetClient(&redis.Options{
-		Addr: config.Redis.GetAddress(),
-	}))
-	rateLimiter.limiter = limiter
 
 	rateLimiter.ipResolver = &IPResolver{
 		config: config.IPResolver,
@@ -135,15 +135,15 @@ func (a *RateLimiter) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 	ip, err := a.ipResolver.getIP(req)
 	if err != nil {
-		a.logger.Error("Error getting IP", err)
+		a.logger.Error("Error getting IP", ErrorAttrWithoutStack(err))
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	a.logger.Debug("Request received", slog.String("ip", ip.String()), slog.String("method", req.Method), slog.String("path", req.URL.Path))
 	res, err := a.Allow(ctx, ip.String())
 	if err != nil {
-		a.logger.Error("Error getting rate limit", err)
-		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		a.logger.Error("Error getting rate limit", ErrorAttrWithoutStack(err))
+		a.next.ServeHTTP(rw, req)
 		return
 	}
 	a.logger.Debug("Rate limit response", slog.String("key", ip.String()), slog.Int("allowed", res.Allowed), slog.Int("remaining", res.Remaining), slog.Duration("resetAfter", res.ResetAfter))
@@ -182,7 +182,7 @@ func (a *RateLimiter) handlePanic(rw http.ResponseWriter, req *http.Request) {
 		return // suppress
 	}
 
-	a.logger.Error("Panic recovered", ErrorAttr(err))
+	a.logger.Error("Panic recovered", ErrorAttrWithoutStack(err))
 	a.next.ServeHTTP(rw, req)
 }
 
