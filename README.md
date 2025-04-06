@@ -2,7 +2,7 @@
 
 A Traefik middleware plugin that rate limits incoming requests using the GCRA algorithm and Redis as a storage backend.
 
-[![Traefik Plugin](https://img.shields.io/badge/Traefik%20Plugin-Traefik%20Rate%20Limit-blue)](https://plugins.traefik.io/plugins/67eb72e756c7ea30f22dd6be/traefik-rate-limit)
+[![Traefik Plugin](https://img.shields.io/badge/Traefik%20Plugin-Traefik%20Rate%20Limit-blue)](https://plugins.traefik.io/plugins/67f2cf4768f0062a5d501e61/traefik-rate-limit)
 [![Version](https://img.shields.io/badge/version-0.1.2-green)](https://github.com/zekihan/traefik-rate-limit/releases/tag/v0.1.2)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/zekihan/traefik-rate-limit/blob/main/LICENSE)
 
@@ -25,7 +25,7 @@ Traefik Rate Limit is a middleware plugin for Traefik that limits the number of 
 
 ### From Traefik Pilot
 
-The easiest way to install this plugin is through the [Traefik Plugin Catalog](https://plugins.traefik.io/plugins/67eb72e756c7ea30f22dd6be/traefik-rate-limit).
+The easiest way to install this plugin is through the [Traefik Plugin Catalog](https://plugins.traefik.io/plugins/67f2cf4768f0062a5d501e61/traefik-rate-limit).
 
 ### Manual Installation
 
