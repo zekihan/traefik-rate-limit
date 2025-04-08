@@ -78,14 +78,22 @@ func (a *IPResolver) handleXForwardedFor(req *http.Request) (net.IP, error) {
 
 func (a *IPResolver) handleHeader(req *http.Request, header string) (net.IP, error) {
 	headerValues := req.Header.Values(header)
-	if len(headerValues) == 1 {
+	switch len(headerValues) {
+	case 1:
 		tempIP := net.ParseIP(headerValues[0])
 		if tempIP == nil {
 			return nil, fmt.Errorf("invalid IP format in %s: %s", header, headerValues[0])
 		}
 		a.logger.Debug("Found valid ip", slog.String("ip", tempIP.String()), slog.String("header", header))
 		return tempIP, nil
-	} else {
+	case 0:
+		ip, err := a.getSrcIP(req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse source IP: %w", err)
+		}
+		a.logger.Debug("No IP found in header, using source IP", slog.String("ip", ip.String()))
+		return ip, nil
+	default:
 		return nil, fmt.Errorf("header %s invalid", header)
 	}
 }
@@ -131,4 +139,15 @@ func (a *IPResolver) getLocalIPsHardcoded() ([]*net.IPNet, error) {
 		ips = append(ips, block)
 	}
 	return ips, nil
+}
+
+func (a *IPResolver) isWhitelisted(ip net.IP, whitelistedIPNets []*net.IPNet) bool {
+	for _, ipNet := range whitelistedIPNets {
+		if ipNet.Contains(ip) {
+			a.logger.Debug("IP is whitelisted", slog.String("ip", ip.String()))
+			return true
+		}
+	}
+	a.logger.Debug("IP is not whitelisted", slog.String("ip", ip.String()))
+	return false
 }

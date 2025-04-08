@@ -132,7 +132,6 @@ func New(_ context.Context, next http.Handler, config *Config, name string) (htt
 func (a *RateLimiter) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	defer a.handlePanic(rw, req)
 
-	ctx := req.Context()
 	ip, err := a.ipResolver.getIP(req)
 	if err != nil {
 		a.logger.Error("Error getting IP", ErrorAttrWithoutStack(err))
@@ -140,6 +139,14 @@ func (a *RateLimiter) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	a.logger.Debug("Request received", slog.String("ip", ip.String()), slog.String("method", req.Method), slog.String("path", req.URL.Path))
+
+	if a.ipResolver.isWhitelisted(ip, a.whitelistedIPNets) {
+		a.logger.Debug("IP is whitelisted, skipping rate limit", slog.String("ip", ip.String()))
+		a.next.ServeHTTP(rw, req)
+		return
+	}
+
+	ctx := req.Context()
 	res, err := a.Allow(ctx, ip.String())
 	if err != nil {
 		a.logger.Error("Error getting rate limit", ErrorAttrWithoutStack(err))

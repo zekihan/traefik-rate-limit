@@ -10,8 +10,7 @@ http:
           ipResolver:
             header: X-Real-IP
             useSrcIP: false
-          whitelistedIPNets:
-            - "127.0.0.1/32"
+          whitelistedIPNets: [ ]
           whitelistLocalIPs: true
           redis:
             host: redis
