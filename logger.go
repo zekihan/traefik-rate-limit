@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"runtime"
+	"runtime/debug"
 )
 
 func init() {
@@ -57,7 +58,7 @@ func ErrorAttr(val any) slog.Attr {
 		errMsg = err.Error()
 	}
 
-	stack := make([]byte, 4096)
+	stack := debug.Stack()
 	n := runtime.Stack(stack, false)
 
 	return slog.Group("error",

@@ -182,7 +182,7 @@ func (a *RateLimiter) handlePanic(rw http.ResponseWriter, req *http.Request) {
 		return // suppress
 	}
 
-	a.logger.Error("Panic recovered", ErrorAttrWithoutStack(err))
+	a.logger.Error("Panic recovered", ErrorAttr(err))
 	a.next.ServeHTTP(rw, req)
 }
 
