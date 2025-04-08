@@ -45,7 +45,7 @@ experimental:
   plugins:
     traefik-real-ip:
       moduleName: github.com/zekihan/traefik-real-ip
-      version: v0.1.10 # renovate: depName=zekihan/traefik-real-ip
+      version: v0.1.11 # renovate: depName=zekihan/traefik-real-ip
   localPlugins:
     traefik-rate-limit:
       moduleName: github.com/zekihan/traefik-rate-limit
