@@ -49,7 +49,7 @@ services:
       retries: 5
 
   redis:
-    image: docker.io/redis:7.4.2@sha256:bd41d55aae1ecff61b2fafd0d66761223fe94a60373eb6bb781cfbb570a84079
+    image: docker.io/redis:7.4.2@sha256:7e880ff9649ce77761ed7b5532a7147ca1c29202ce988ed3a91beee66a1be767
     container_name: traefik-rate-limit_redis
     networks:
       - data
