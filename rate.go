@@ -13,9 +13,16 @@ import (
 )
 
 type RatelimitConfig struct {
-	Rate   int    `json:"rate,omitempty"`
-	Burst  int    `json:"burst,omitempty"`
+	// Rate is the number of requests recovered per period.
+	Rate int `json:"rate,omitempty"`
+
+	// Burst is the maximum number of requests allowed in a burst.
+	Burst int `json:"burst,omitempty"`
+
+	// Period is the time period for the rate limit.
 	Period string `json:"period,omitempty"`
+
+	// period is the parsed time duration for the rate limit.
 	period time.Duration
 }
 
