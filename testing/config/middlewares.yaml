@@ -8,6 +8,5 @@ http:
           - security
           - inflightreq
           - traefik-real-ip
-          - rate-limit-1s
           - rate-limit-1m
           - compress

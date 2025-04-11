@@ -3,8 +3,8 @@ package traefik_rate_limit
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis_rate/v10"
-	"github.com/redis/go-redis/v9"
+	"github.com/zekihan/traefik-rate-limit/internal/client"
+	"github.com/zekihan/traefik-rate-limit/internal/comm"
 	"log/slog"
 	"net"
 	"net/http"
@@ -55,10 +55,7 @@ type RateLimiter struct {
 }
 
 func (a *RateLimiter) GetKey(ip string) string {
-	prefix := a.conf.Redis.Prefix
-	if prefix == "" {
-		prefix = "traefik"
-	}
+	prefix := "traefik"
 	name := url.PathEscape(a.name)
 	if name == "" {
 		name = "default"
@@ -73,24 +70,22 @@ func (a *RateLimiter) GetKey(ip string) string {
 	return key
 }
 
-func (a *RateLimiter) Allow(ctx context.Context, ip string) (res *redis_rate.Result, err error) {
+func (a *RateLimiter) Allow(ctx context.Context, ip string) (res *comm.RateLimitResponseData, err error) {
 	if a.conf == nil {
 		return nil, fmt.Errorf("missing configuration")
 	}
 	if a.conf.Ratelimit == nil {
 		return nil, fmt.Errorf("missing ratelimit configuration")
 	}
-	if a.conf.Redis == nil {
-		return nil, fmt.Errorf("missing redis configuration")
-	}
 	if ip == "" {
 		return nil, fmt.Errorf("missing ip address")
 	}
 
-	limit := redis_rate.Limit{
-		Rate:   a.conf.Ratelimit.Rate,
-		Burst:  a.conf.Ratelimit.Burst,
+	limit := &comm.RateLimitRequestData{
+		Rate:   uint64(a.conf.Ratelimit.Rate),
+		Burst:  uint64(a.conf.Ratelimit.Burst),
 		Period: a.conf.Ratelimit.period,
+		Key:    a.GetKey(ip),
 	}
 
 	defer func() {
@@ -100,10 +95,22 @@ func (a *RateLimiter) Allow(ctx context.Context, ip string) (res *redis_rate.Res
 			err = fmt.Errorf("%v", r)
 		}
 	}()
-	rdb := redis.GetClient(&redis.Options{
-		Addr: a.conf.Redis.GetAddress(),
-	})
+	socketPathVal := "/tmp/traefik-rate-limit.sock"
+	socketPath := &socketPathVal
+	newClient, err := client.NewClient(*socketPath)
+	if err != nil {
+		panic(err)
+	}
+	defer newClient.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	limiter := redis_rate.NewLimiter(rdb)
-	return limiter.Allow(ctx, a.GetKey(ip), limit)
+	res, err = newClient.RateLimit(ctx, limit)
+	if err != nil {
+		slog.Info("failed to send request", slog.Any("error", err))
+		return nil, err
+	}
+	newClient.Close()
+	cancel()
+	return res, nil
 }

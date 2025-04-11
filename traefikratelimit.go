@@ -16,7 +16,6 @@ import (
 // Config the plugin configuration.
 type Config struct {
 	LogLevel          string            `json:"logLevel,omitempty"`
-	Redis             *RedisConfig      `json:"redis,omitempty"`
 	Ratelimit         *RatelimitConfig  `json:"rateLimit,omitempty"`
 	IPResolver        *IPResolverConfig `json:"ipResolver,omitempty"`
 	WhitelistedIPNets []string          `json:"whitelistedIPNets,omitempty"`
@@ -27,11 +26,6 @@ type Config struct {
 func CreateConfig() *Config {
 	return &Config{
 		LogLevel: "info",
-		Redis: &RedisConfig{
-			Host:   "localhost",
-			Port:   6379,
-			Prefix: "traefik",
-		},
 		Ratelimit: &RatelimitConfig{
 			Rate:   100,
 			Burst:  100,
@@ -47,12 +41,6 @@ func CreateConfig() *Config {
 }
 
 func (c *Config) Validate() error {
-	if c.Redis == nil {
-		return fmt.Errorf("missing redis configuration")
-	}
-	if err := c.Redis.Validate(); err != nil {
-		return fmt.Errorf("invalid redis configuration")
-	}
 	if c.Ratelimit == nil {
 		return fmt.Errorf("missing ratelimit configuration")
 	}
@@ -153,7 +141,7 @@ func (a *RateLimiter) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		a.next.ServeHTTP(rw, req)
 		return
 	}
-	a.logger.Debug("Rate limit response", slog.String("key", ip.String()), slog.Int("allowed", res.Allowed), slog.Int("remaining", res.Remaining), slog.Duration("resetAfter", res.ResetAfter))
+	a.logger.Debug("Rate limit response", slog.String("key", ip.String()), slog.Int64("allowed", res.Allowed), slog.Int64("remaining", res.Remaining), slog.Duration("resetAfter", res.ResetAfter))
 
 	if res.Allowed <= 0 {
 		retryAfter := int64(res.RetryAfter/time.Second) + 1
@@ -173,24 +161,12 @@ func (a *RateLimiter) handlePanic(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	if errors.Is(err, http.ErrAbortHandler) {
-		retryCount, ok := req.Context().Value(RetryCountKey).(int)
-		if ok {
-			if retryCount > 3 {
-				a.logger.Info("Max retry count reached, aborting", slog.Int(string(RetryCountKey), retryCount), ErrorAttrWithoutStack(err))
-				a.next.ServeHTTP(rw, req)
-				return // suppress
-			}
-		} else {
-			retryCount = 1
-		}
-		a.logger.Info("Retrying request", slog.Int(string(RetryCountKey), retryCount))
-		req = req.WithContext(context.WithValue(req.Context(), RetryCountKey, retryCount+1))
-		a.ServeHTTP(rw, req)
 		return // suppress
 	}
 
 	a.logger.Error("Panic recovered", ErrorAttr(err))
-	a.next.ServeHTTP(rw, req)
+	http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	//a.next.ServeHTTP(rw, req)
 }
 
 func getPanicError(r any) error {
