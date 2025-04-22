@@ -24,15 +24,33 @@ services:
       - "traefik.enable=true"
       - "traefik-rate-limit.enable=true"
 
+  server:
+    build:
+      context: ..
+    container_name: traefik-rate-limit_server
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      TRAEFIK_RATE_LIMIT__LOG_LEVEL: debug
+      TRAEFIK_RATE_LIMIT__SOCKET_PATH: "/tmp/traefik-rate-limit.sock"
+      TRAEFIK_RATE_LIMIT__REDIS_ADDRS: "redis:6379"
+      TRAEFIK_RATE_LIMIT__REDIS_DB: "0"
+    networks:
+      - data
+      - sidecar
+    volumes:
+      - ./tmp:/tmp
+
   traefik:
     image: docker.io/traefik:v3.3.6@sha256:83f3c843133530e4aa45e6ddc415488583a8a01c88adc5022d415c6e97ceeaae
     container_name: traefik-rate-limit_traefik
     depends_on:
-      redis:
+      server:
         condition: service_healthy
     networks:
       - proxy
-      - data
+      - sidecar
       - default
     ports:
       - "4009:80"
@@ -42,6 +60,7 @@ services:
       - ../:/plugins-local/src/github.com/zekihan/traefik-rate-limit:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./tmp:/tmp
     healthcheck:
       test: [ "CMD-SHELL", "traefik healthcheck | grep OK" ]
       interval: 1s
@@ -67,5 +86,7 @@ networks:
   proxy:
     internal: true
   data:
+    internal: true
+  sidecar:
     internal: true
   default:
