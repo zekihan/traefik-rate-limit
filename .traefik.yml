@@ -19,3 +19,4 @@ testData:
   whitelistedIPNets:
     - "127.0.0.1/32"
   whitelistLocalIPs: true
+  socketPath: /tmp/traefik-rate-limit.sock

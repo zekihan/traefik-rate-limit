@@ -95,6 +95,7 @@ http:
 | `whitelistedIPNets`   | array of strings | `[]`        | A list of IP addresses or CIDR ranges that are not rate limited.                     |
 | `whitelistLocalIPs`   | boolean          | `true`      | Whether to whitelist local IP ranges.                                                |
 | `logLevel`            | string           | `info`      | Log level (debug, info, warn, error)                                                 |
+| `socketPath`          | string           | `""`        | The path to the socket file for Redis. If empty, the default Redis socket is used.   |
 
 ## How It Works
 

@@ -20,6 +20,7 @@ type Config struct {
 	IPResolver        *IPResolverConfig `json:"ipResolver,omitempty"`
 	WhitelistedIPNets []string          `json:"whitelistedIPNets,omitempty"`
 	WhitelistLocalIPs bool              `json:"whitelistLocalIPs,omitempty"`
+	SocketPath        string            `json:"socketPath,omitempty"`
 }
 
 // CreateConfig creates the default plugin configuration.
@@ -37,6 +38,7 @@ func CreateConfig() *Config {
 		},
 		WhitelistedIPNets: make([]string, 0),
 		WhitelistLocalIPs: true,
+		SocketPath:        "",
 	}
 }
 
@@ -88,6 +90,12 @@ func New(_ context.Context, next http.Handler, config *Config, name string) (htt
 		slog.Warn("Invalid log level, using info", slog.String("level", config.LogLevel))
 		logLevel.Set(slog.LevelInfo)
 	}
+
+	socketPath := config.SocketPath
+	if socketPath == "" {
+		socketPath = "/tmp/traefik-ratelimit.sock"
+	}
+	rateLimiter.socketPath = socketPath
 
 	pluginLogger := NewPluginLogger(name, logLevel)
 	rateLimiter.logger = pluginLogger

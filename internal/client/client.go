@@ -19,6 +19,9 @@ type Client struct {
 }
 
 func NewClient(socketPath string) (*Client, error) {
+	if socketPath == "" {
+		return nil, fmt.Errorf("socket path is empty")
+	}
 	startTime := time.Now()
 	maxWait := 5 * time.Second
 	for {

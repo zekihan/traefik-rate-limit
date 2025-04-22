@@ -52,6 +52,7 @@ type RateLimiter struct {
 	logger            *PluginLogger
 	ipResolver        *IPResolver
 	whitelistedIPNets []*net.IPNet
+	socketPath        string
 }
 
 func (a *RateLimiter) GetKey(ip string) string {
@@ -95,9 +96,7 @@ func (a *RateLimiter) Allow(ctx context.Context, ip string) (res *comm.RateLimit
 			err = fmt.Errorf("%v", r)
 		}
 	}()
-	socketPathVal := "/tmp/traefik-rate-limit.sock"
-	socketPath := &socketPathVal
-	newClient, err := client.NewClient(*socketPath)
+	newClient, err := client.NewClient(a.socketPath)
 	if err != nil {
 		panic(err)
 	}
