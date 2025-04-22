@@ -8,6 +8,7 @@ on:
     paths:
       - './cmd/**'
       - './internal/**'
+      - 'VERSION'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
