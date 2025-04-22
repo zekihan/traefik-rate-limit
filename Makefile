@@ -55,7 +55,7 @@ build/docker:
 
 .PHONY: build/release
 build/release:
-	goreleaser build --clean --skip=validate
+	goreleaser build --id traefik-rate-limit --clean --skip=validate
 
 .PHONY: run
 run: build
@@ -74,5 +74,5 @@ new_version:
 	./scripts/new_version.sh $(VERSION)
 
 .PHONY: docker
-docker:
+docker: build/docker
 	cd testing && docker compose up -d --build --force-recreate --remove-orphans
