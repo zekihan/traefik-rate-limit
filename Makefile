@@ -49,6 +49,10 @@ build:
 build/all:
 	goreleaser build --clean --snapshot
 
+.PHONY: build/docker
+build/docker:
+	goreleaser build --id traefik-rate-limit_docker --clean --skip=validate
+
 .PHONY: build/release
 build/release:
 	goreleaser build --clean --skip=validate

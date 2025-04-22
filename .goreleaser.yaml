@@ -49,6 +49,29 @@ builds:
       - goos: windows
         goarch: arm
 
+  - id: traefik-rate-limit_docker
+    dir: ./cmd
+    binary: traefik-rate-limit_{{.Os}}_{{.Arch}}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}/traefik-rate-limit
+    no_unique_dist_dir: true
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X github.com/zekihan/traefik-rate-limit/internal/utils.Version={{.Version}}
+      - -X github.com/zekihan/traefik-rate-limit/internal/utils.BuildDate={{.CommitTimestamp}}
+      - -X github.com/zekihan/traefik-rate-limit/internal/utils.CommitHash={{.Commit}}
+      - -X github.com/zekihan/traefik-rate-limit/internal/utils.GitTreeState={{.GitTreeState}}
+    flags:
+      - -trimpath
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - '7'
+
 universal_binaries:
   - id: traefik-rate-limit
     replace: false
