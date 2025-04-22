@@ -1,26 +1,18 @@
 http:
   middlewares:
-    rate-limit-1s:
-      plugin:
-        traefik-rate-limit: &traefik-rate-limit
-          rateLimit:
-            rate: 10
-            burst: 10
-            period: 1s
-          ipResolver:
-            header: X-Real-IP
-            useSrcIP: false
-          whitelistedIPNets: [ ]
-          whitelistLocalIPs: true
-          redis:
-            host: redis
-            port: 6379
-          logLevel: debug
     rate-limit-1m:
       plugin:
         traefik-rate-limit:
-          <<: *traefik-rate-limit
           rateLimit:
             rate: 100
             burst: 100
             period: 60s
+          ipResolver:
+            header: X-Real-IP
+            useSrcIP: false
+          whitelistedIPNets: [ ]
+          whitelistLocalIPs: false
+          redis:
+            host: redis
+            port: 6379
+          logLevel: debug

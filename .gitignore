@@ -39,3 +39,6 @@ go.work
 go.work.sum
 .env
 !vendor/**
+*.prof
+tmp
+dist

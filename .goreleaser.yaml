@@ -1,0 +1,111 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+project_name: traefik-rate-limit
+
+before:
+  hooks:
+    - go fmt ./...
+    - go mod tidy
+    - go mod vendor
+
+builds:
+  - id: traefik-rate-limit
+    dir: ./cmd
+    binary: traefik-rate-limit_{{.Os}}_{{.Arch}}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}/traefik-rate-limit
+    no_unique_dist_dir: true
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X github.com/zekihan/traefik-rate-limit/internal/utils.Version={{.Version}}
+      - -X github.com/zekihan/traefik-rate-limit/internal/utils.BuildDate={{.CommitTimestamp}}
+      - -X github.com/zekihan/traefik-rate-limit/internal/utils.CommitHash={{.Commit}}
+      - -X github.com/zekihan/traefik-rate-limit/internal/utils.GitTreeState={{.GitTreeState}}
+    flags:
+      - -trimpath
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - '7'
+    ignore:
+      - goos: darwin
+        goarch: '386'
+      - goos: openbsd
+        goarch: arm
+      - goos: openbsd
+        goarch: arm64
+      - goos: freebsd
+        goarch: arm
+      - goos: freebsd
+        goarch: arm64
+      - goos: windows
+        goarch: arm
+
+universal_binaries:
+  - id: traefik-rate-limit
+    replace: false
+
+archives:
+  - id: traefik-rate-limit
+    name_template: '{{ .ProjectName }}_v{{ .Version }}_{{.Os}}_{{.Arch}}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    files:
+      - 'LICENSE*'
+      - 'license*'
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}"
+
+report_sizes: true
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  disable: false
+  use: github
+  sort: asc
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: "Bug fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: "Chores"
+      regexp: '^.*?chore(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: "CI"
+      regexp: '^.*?ci(\([[:word:]]+\))??!?:.+$'
+      order: 3
+    - title: Others
+      order: 999
+
+release:
+  disable: false
+  draft: false
+  replace_existing_draft: true
+  prerelease: auto
+  make_latest: true
+  mode: keep-existing
+  footer: |
+    Docker images
+    ---
+    - `docker pull docker.io/zekihan/traefik-rate-limit:v{{.Version}}`
+    - `docker pull ghcr.io/zekihan/traefik-rate-limit:v{{.Version}}`
+
+metadata:
+  mod_timestamp: "{{ .CommitTimestamp }}"
