@@ -1,0 +1,92 @@
+name: traefik-rate-limit
+
+services:
+  whoami:
+    image: docker.io/traefik/whoami:v1.11.0@sha256:200689790a0a0ea48ca45992e0450bc26ccab5307375b41c84dfc4f2475937ab
+    container_name: traefik-rate-limit_whoami
+    depends_on:
+      traefik:
+        condition: service_healthy
+    networks:
+      - proxy
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      - "traefik.http.services.traefik-rate-limit_whoami.loadbalancer.server.port=80"
+      - "traefik.http.services.traefik-rate-limit_whoami.loadbalancer.server.scheme=http"
+      - "traefik.http.services.traefik-rate-limit_whoami.loadbalancer.passhostheader=true"
+
+      - "traefik.http.routers.traefik-rate-limit_whoami.service=traefik-rate-limit_whoami"
+      - "traefik.http.routers.traefik-rate-limit_whoami.middlewares=standard@file"
+      - "traefik.http.routers.traefik-rate-limit_whoami.rule=Method(`GET`)"
+      - "traefik.http.routers.traefik-rate-limit_whoami.entrypoints=web"
+
+      - "traefik.enable=true"
+      - "traefik-rate-limit.enable=true"
+
+  server:
+    build:
+      context: ..
+    container_name: traefik-rate-limit_server
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      TRAEFIK_RATE_LIMIT__LOG_LEVEL: debug
+      TRAEFIK_RATE_LIMIT__SOCKET_PATH: "/tmp/traefik-rate-limit.sock"
+      TRAEFIK_RATE_LIMIT__REDIS_ADDRS: "redis:6379"
+      TRAEFIK_RATE_LIMIT__REDIS_DB: "0"
+    networks:
+      - data
+      - sidecar
+    volumes:
+      - ./tmp:/tmp
+
+  traefik:
+    image: docker.io/traefik:v3.4.0@sha256:4cf907247939b5d20bf4eff73abd21cb413c339600dde76dbc94a874b2578a27
+    container_name: traefik-rate-limit_traefik
+    depends_on:
+      server:
+        condition: service_healthy
+    networks:
+      - proxy
+      - sidecar
+      - default
+    ports:
+      - "4009:80"
+    volumes:
+      - ./traefik.yaml:/etc/traefik/traefik.yaml
+      - ./config:/etc/traefik/mconfig
+      - ../:/plugins-local/src/github.com/zekihan/traefik-rate-limit:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
+      - ./tmp:/tmp
+    healthcheck:
+      test: [ "CMD-SHELL", "traefik healthcheck | grep OK" ]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: docker.io/redis:8.0.1@sha256:1b7c17f650602d97a10724d796f45f0b5250d47ee5ba02f28de89f8a1531f3ce
+    container_name: traefik-rate-limit_redis
+    networks:
+      - data
+      - default
+    ports:
+      - "6309:6379"
+    command: [ "redis-server" ]
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+
+networks:
+  proxy:
+    internal: true
+  data:
+    internal: true
+  sidecar:
+    internal: true
+  default:
