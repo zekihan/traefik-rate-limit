@@ -16,7 +16,7 @@ func init() {
 	logger := slog.New(
 		tint.NewHandler(os.Stdout, &tint.Options{
 			Level:      slog.LevelError,
-			TimeFormat: time.Kitchen,
+			TimeFormat: time.RFC3339,
 		}),
 	)
 	logger = logger.With(slog.String("app", "server"))

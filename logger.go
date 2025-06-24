@@ -17,7 +17,7 @@ func init() {
 			AddSource:   false,
 			Level:       slog.LevelDebug,
 			ReplaceAttr: replaceAttr,
-			TimeFormat:  time.Kitchen,
+			TimeFormat:  time.RFC3339,
 		}),
 	))
 }
@@ -33,7 +33,7 @@ func NewPluginLogger(pluginName string, logLevel *slog.LevelVar) *PluginLogger {
 			AddSource:   false,
 			Level:       logLevel,
 			ReplaceAttr: replaceAttr,
-			TimeFormat:  time.Kitchen,
+			TimeFormat:  time.RFC3339,
 		}),
 	))
 	return &PluginLogger{

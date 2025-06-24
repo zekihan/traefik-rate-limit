@@ -19,7 +19,7 @@ func Test(t *testing.T) {
 			AddSource:   false,
 			Level:       slog.LevelDebug,
 			ReplaceAttr: nil,
-			TimeFormat:  time.Kitchen,
+			TimeFormat:  time.RFC3339,
 		}),
 	)
 	logger = logger.With(slog.String("app", "server"))

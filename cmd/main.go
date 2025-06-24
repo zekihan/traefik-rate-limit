@@ -97,7 +97,7 @@ func setLogger(cmd string) {
 			AddSource:   false,
 			Level:       level,
 			ReplaceAttr: nil,
-			TimeFormat:  time.Kitchen,
+			TimeFormat:  time.RFC3339,
 		}),
 	)
 	logger = logger.With(slog.String("app", cmd))
