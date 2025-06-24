@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/lmittmann/tint"
 	"github.com/zekihan/traefik-rate-limit/internal/client"
 	"github.com/zekihan/traefik-rate-limit/internal/server"
 	"log/slog"
@@ -12,11 +13,12 @@ import (
 )
 
 func init() {
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource:   false,
-		Level:       slog.LevelError,
-		ReplaceAttr: nil,
-	}))
+	logger := slog.New(
+		tint.NewHandler(os.Stdout, &tint.Options{
+			Level:      slog.LevelError,
+			TimeFormat: time.Kitchen,
+		}),
+	)
 	logger = logger.With(slog.String("app", "server"))
 	slog.SetDefault(logger)
 }

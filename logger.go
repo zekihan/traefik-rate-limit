@@ -3,19 +3,23 @@ package traefik_rate_limit
 import (
 	"context"
 	"fmt"
+	"github.com/lmittmann/tint"
 	"log/slog"
 	"os"
 	"runtime"
 	"runtime/debug"
+	"time"
 )
 
 func init() {
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource:   false,
-		Level:       slog.LevelDebug,
-		ReplaceAttr: replaceAttr,
-	}))
-	slog.SetDefault(logger)
+	slog.SetDefault(slog.New(
+		tint.NewHandler(os.Stdout, &tint.Options{
+			AddSource:   false,
+			Level:       slog.LevelDebug,
+			ReplaceAttr: replaceAttr,
+			TimeFormat:  time.Kitchen,
+		}),
+	))
 }
 
 type PluginLogger struct {
@@ -24,14 +28,14 @@ type PluginLogger struct {
 }
 
 func NewPluginLogger(pluginName string, logLevel *slog.LevelVar) *PluginLogger {
-	opts := &slog.HandlerOptions{
-		AddSource:   false,
-		Level:       logLevel,
-		ReplaceAttr: replaceAttr,
-	}
-
-	handler := slog.NewTextHandler(os.Stdout, opts)
-	slog.SetDefault(slog.New(handler))
+	slog.SetDefault(slog.New(
+		tint.NewHandler(os.Stdout, &tint.Options{
+			AddSource:   false,
+			Level:       logLevel,
+			ReplaceAttr: replaceAttr,
+			TimeFormat:  time.Kitchen,
+		}),
+	))
 	return &PluginLogger{
 		logger:     slog.Default(),
 		pluginName: pluginName,

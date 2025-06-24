@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/lmittmann/tint"
 	"github.com/zekihan/traefik-rate-limit/cmd/client"
 	"github.com/zekihan/traefik-rate-limit/cmd/healthCheck"
 	"github.com/zekihan/traefik-rate-limit/cmd/server"
@@ -14,6 +15,7 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"strings"
+	"time"
 )
 
 var (
@@ -90,11 +92,14 @@ func setLogger(cmd string) {
 		level = slog.LevelInfo
 	}
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource:   false,
-		Level:       level,
-		ReplaceAttr: nil,
-	}))
+	logger := slog.New(
+		tint.NewHandler(os.Stdout, &tint.Options{
+			AddSource:   false,
+			Level:       level,
+			ReplaceAttr: nil,
+			TimeFormat:  time.Kitchen,
+		}),
+	)
 	logger = logger.With(slog.String("app", cmd))
 	slog.SetDefault(logger)
 }

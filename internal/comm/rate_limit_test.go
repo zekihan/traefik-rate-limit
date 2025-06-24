@@ -73,8 +73,8 @@ func TestRateLimitResponseData(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &RateLimitResponseData{
-				Allowed:    tt.fields.Allowed,
-				Remaining:  tt.fields.Remaining,
+				Allowed:    int64(tt.fields.Allowed),
+				Remaining:  int64(tt.fields.Remaining),
 				RetryAfter: tt.fields.RetryAfter,
 				ResetAfter: tt.fields.ResetAfter,
 			}
