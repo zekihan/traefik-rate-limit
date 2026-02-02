@@ -5,7 +5,7 @@ go 1.25.6
 require (
 	github.com/go-redis/redis_rate/v10 v10.0.1
 	github.com/joho/godotenv v1.5.1
-	github.com/lmittmann/tint v1.1.2
+	github.com/lmittmann/tint v1.1.3
 	github.com/redis/go-redis/v9 v9.17.3
 	github.com/sethvargo/go-envconfig v1.3.0
 )
