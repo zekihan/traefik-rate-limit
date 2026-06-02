@@ -1,6 +1,6 @@
 module github.com/zekihan/traefik-rate-limit
 
-go 1.26.3
+go 1.26.4
 
 require (
 	github.com/go-redis/redis_rate/v10 v10.0.1
