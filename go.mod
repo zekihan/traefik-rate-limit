@@ -6,7 +6,7 @@ require (
 	github.com/go-redis/redis_rate/v10 v10.0.1
 	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.1.3
-	github.com/redis/go-redis/v9 v9.20.0
+	github.com/redis/go-redis/v9 v9.20.1
 	github.com/sethvargo/go-envconfig v1.3.0
 )
 
