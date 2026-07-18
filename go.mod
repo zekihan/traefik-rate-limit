@@ -7,7 +7,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.2.0
 	github.com/redis/go-redis/v9 v9.21.0
-	github.com/sethvargo/go-envconfig v1.4.0
+	github.com/sethvargo/go-envconfig v1.4.1
 )
 
 require (

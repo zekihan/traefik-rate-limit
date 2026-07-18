@@ -20,8 +20,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/redis/go-redis/v9 v9.21.0 h1:FPBE4hhbAke+TLmcY3WkpbDffJEomdqPn3HYiqAtL9E=
 github.com/redis/go-redis/v9 v9.21.0/go.mod h1:v/M13XI1PVCDcm01VtPFOADfZtHf8YW3baQf57KlIkA=
-github.com/sethvargo/go-envconfig v1.4.0 h1:rRx1LmNZaQ3Xcr6iFwItWeYr3fs+Nk33A8/3v670JaI=
-github.com/sethvargo/go-envconfig v1.4.0/go.mod h1:ebe6rgj7KzrRZPzDXU4W6WZWDEirQwvcgmS0bmC3Sjg=
+github.com/sethvargo/go-envconfig v1.4.1 h1:CXqMsoFqHxGl57IuXwUGhiBS/lH2OmQ7O70siNFUYV0=
+github.com/sethvargo/go-envconfig v1.4.1/go.mod h1:ebe6rgj7KzrRZPzDXU4W6WZWDEirQwvcgmS0bmC3Sjg=
 github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/zeebo/xxh3 v1.1.0 h1:s7DLGDK45Dyfg7++yxI0khrfwq9661w9EN78eP/UZVs=
